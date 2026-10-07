@@ -283,6 +283,9 @@ static core::VoidParameter* parameterArray[] = {
   &setPrimary,
 #endif
   &fullscreenSystemKeys,
+#ifdef _WIN32
+  &rfb::CConnection::emulateMacOSKeys,
+#endif
   /* Keyboard shortcuts */
   &shortcutModifiers,
 };

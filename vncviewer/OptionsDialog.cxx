@@ -321,6 +321,9 @@ void OptionsDialog::loadOptions(void)
   sendPrimaryCheckbox->value(sendPrimary);
 #endif
   systemKeysCheckbox->value(fullscreenSystemKeys);
+#ifdef _WIN32
+  emulateMacOSKeysCheckbox->value(rfb::CConnection::emulateMacOSKeys);
+#endif
 
   /* Keyboard shortcuts */
   unsigned modifierMask;
@@ -472,6 +475,9 @@ void OptionsDialog::storeOptions(void)
   sendPrimary.setParam(sendPrimaryCheckbox->value());
 #endif
   fullscreenSystemKeys.setParam(systemKeysCheckbox->value());
+#ifdef _WIN32
+  rfb::CConnection::emulateMacOSKeys.setParam(emulateMacOSKeysCheckbox->value());
+#endif
 
   /* Keyboard shortcuts */
   std::list<std::string> modifierList;
@@ -966,6 +972,14 @@ void OptionsDialog::createInputPage(int tx, int ty, int tw, int th)
                _("Always send all keyboard input in full screen")));
     systemKeysCheckbox->callback(handleSystemKeys, this);
     ty += CHECK_HEIGHT + TIGHT_MARGIN;
+#ifdef _WIN32
+    emulateMacOSKeysCheckbox = new Fl_Check_Button(
+      LBLRIGHT(tx, ty, CHECK_MIN_WIDTH, CHECK_HEIGHT,
+               _("Emulate macOS keys")));
+    emulateMacOSKeysCheckbox->tooltip(
+      _("Win = Option, Alt = Command, Ctrl = Control (both sides). Disables AltGr."));
+    ty += CHECK_HEIGHT + TIGHT_MARGIN;
+#endif
   }
   ty -= TIGHT_MARGIN;
 

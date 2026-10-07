@@ -129,6 +129,9 @@ protected:
   Fl_Choice *cursorTypeChoice;
   Fl_Group *keyboardGroup;
   Fl_Check_Button *systemKeysCheckbox;
+#ifdef _WIN32
+  Fl_Check_Button *emulateMacOSKeysCheckbox;
+#endif
   Fl_Group *clipboardGroup;
   Fl_Check_Button *acceptClipboardCheckbox;
 #if !defined(WIN32) && !defined(__APPLE__)

@@ -60,6 +60,14 @@ core::BoolParameter
   CConnection::noJpeg("NoJPEG", "Disable lossy JPEG compression.",
                       false);
 
+#ifdef _WIN32
+core::BoolParameter
+  CConnection::emulateMacOSKeys("EmulateMacOSKeys",
+                              "Send Win as Option and Alt as Command "
+                              "for Apple Screen Sharing (disables AltGr).",
+                              true);
+#endif
+
 CConnection::CConnection()
   : csecurity(nullptr),
     supportsLocalCursor(false), supportsCursorPosition(false),
@@ -834,6 +842,17 @@ void CConnection::sendKeyPress(int systemKeyCode,
   case XK_Alt_R:
     keySym = XK_ISO_Level3_Shift;
     break;
+  }
+#endif
+
+#ifdef _WIN32
+  // Apple Screen Sharing interprets Meta as Option and Alt as Command.
+  // Preserve the physical key code and the keysym used for local shortcuts.
+  if (emulateMacOSKeys) {
+    if (keySym == XK_Super_L)
+      keySym = XK_Meta_L;
+    else if (keySym == XK_Super_R)
+      keySym = XK_Meta_R;
   }
 #endif
 

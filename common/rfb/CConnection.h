@@ -66,6 +66,9 @@ namespace rfb {
     // Settings that control the connection
 
     static core::BoolParameter noJpeg;
+#ifdef _WIN32
+    static core::BoolParameter emulateMacOSKeys;
+#endif
 
     // Methods to initialise the connection
 

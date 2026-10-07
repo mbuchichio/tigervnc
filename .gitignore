@@ -13,3 +13,8 @@ config.h
 cmake_install.cmake
 cmake_uninstall.cmake
 install_manifest.txt
+
+# Local Windows viewer builds and their runtime bundle
+/.local-build/
+/dist/apple-viewer/
+/dist/TigerVNC-*-apple-viewer-win64.zip

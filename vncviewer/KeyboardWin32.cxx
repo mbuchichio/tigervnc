@@ -34,6 +34,7 @@
 #include <FL/Fl.H>
 
 #include <core/LogWriter.h>
+#include <rfb/CConnection.h>
 
 #define XK_MISCELLANY
 #define XK_XKB_KEYS
@@ -221,9 +222,8 @@ bool KeyboardWin32::handleEvent(const void* event)
       systemKeyCode = 0x38;
     }
 
-    // Windows doesn't have a proper AltGr, but handles it using fake
-    // Ctrl+Alt. However the remote end might not be Windows, so we need
-    // to merge those in to a single AltGr event. We detect this case
+    // Windows represents AltGr using fake Ctrl+Alt. Suppress the fake Ctrl
+    // and send AltGr, or Right Alt when emulating macOS keys. Detect this case
     // by seeing the two key events directly after each other with a very
     // short time between them (<50ms) and supress the Ctrl event.
     if (altGrArmed) {
@@ -265,10 +265,12 @@ bool KeyboardWin32::handleEvent(const void* event)
 
     GetKeyboardState(state);
 
-    // Pressing Ctrl wreaks havoc with the symbol lookup, so turn
-    // that off. But AltGr shows up as Ctrl+Alt in Windows, so keep
-    // Ctrl if Alt is active.
-    if (!(state[VK_LCONTROL] & 0x80) || !(state[VK_RMENU] & 0x80))
+    // Ctrl interferes with symbol lookup, except for Windows' AltGr Ctrl+Alt.
+    // When emulating macOS keys, Right Alt is Command: ignore Ctrl even in
+    // that case so shortcuts use normal symbols instead of AltGr characters.
+    // Real Ctrl press/release events are forwarded independently.
+    if (rfb::CConnection::emulateMacOSKeys ||
+        !(state[VK_LCONTROL] & 0x80) || !(state[VK_RMENU] & 0x80))
       state[VK_CONTROL] = state[VK_LCONTROL] = state[VK_RCONTROL] = 0;
 
     keySym = translateVKey(vKey, isExtended, state);
@@ -292,9 +294,10 @@ bool KeyboardWin32::handleEvent(const void* event)
     if ((keySym == XK_Shift_L) && (systemKeyCode == 0x36))
       keySym = XK_Shift_R;
 
-    // AltGr handling (see above)
+    // AltGr handling: macOS emulation keeps Right Alt as XK_Alt_R.
     if (hasAltGr()) {
-      if ((systemKeyCode == 0xb8) && (keySym == XK_Alt_R))
+      if (!rfb::CConnection::emulateMacOSKeys &&
+          (systemKeyCode == 0xb8) && (keySym == XK_Alt_R))
         keySym = XK_ISO_Level3_Shift;
 
       // Possible start of AltGr sequence?
